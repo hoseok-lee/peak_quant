@@ -74,9 +74,28 @@ def quantify(
 
         unsorted_peaks += _peaks
 
+    subprocess.Popen(
+        (
+            "bedtools sort | "
+            "bedtools merge > "
+            "merged.bed"
+        ),
+        shell = True, text = True,
+        stdin = subprocess.PIPE,
+        stdout = subprocess.PIPE
+    ).communicate(input = unsorted_peaks)
+
+    # Order of new bedgraph
+    order = "$1\"\t\"$2\"\t\"$3\"\t\"$7\"\t\"$8"
+
     peaks, _ = subprocess.Popen(
         (
-            "bedtools sort"
+            "bedtools sort | "
+            "bedtools intersect -wao -a merged.bed -b - |"
+
+            # Convert the counts to a fraction of the coverage
+            "awk 'BEGIN { FS=OFS = \"\t\" } "
+            f"         {{ print {order} }}'"
         ),
         shell = True, text = True,
         stdin = subprocess.PIPE,
