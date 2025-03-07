@@ -6,7 +6,6 @@ from pathlib import Path
 import subprocess
 
 
-
 def bdg_to_df(
     bedgraph: str,
     binarize: bool = False
@@ -115,8 +114,16 @@ def save(
     df.to_csv(Path(output) / "matrix.csv")
 
 
-################################################################################
-# Run your functions here!
+# Parse arguments
+if __name__ == "__main__":
 
-# df = quantify("/path/to/sample_sheet.csv", binarize = False)
-# save(df, "/path/to/output_folder")
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("input", help="comma-delimited file denoting path to peak BED")
+    parser.add_argument("output", help="path to output folder to save sparse matrix")
+    parser.add_argument("-b", "--binarize", help="binarize matrix counts, stores peaks availability instead of peak counts", action="store_true")
+    args = parser.parse_args()
+
+    df = quantify(args.input, binarize = args.binarize)
+    save(df, args.output)
