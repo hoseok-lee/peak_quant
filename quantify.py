@@ -7,8 +7,7 @@ import subprocess
 
 
 def bdg_to_df(
-    bedgraph: str,
-    binarize: bool = False
+    bedgraph: str
 ) -> pd.DataFrame:
 
     # Data for COO matrix
@@ -33,7 +32,7 @@ def bdg_to_df(
 
         row.append(barcodes[barcode])
         col.append(regions[region])
-        data.append(1 if binarize else score)
+        data.append(score)
 
     sparse_mat = coo_matrix((data, (row, col)), dtype=np.float32)
 
@@ -85,7 +84,7 @@ def quantify(
     ).communicate(input = unsorted_peaks)
 
     # Order of new bedgraph
-    order = "$1\"\t\"$2\"\t\"$3\"\t\"$7\"\t\"$8"
+    order = "$1\"\t\"$2\"\t\"$3\"\t\"$7\"\t\"$15"
 
     peaks, _ = subprocess.Popen(
         (
@@ -94,14 +93,16 @@ def quantify(
 
             # Convert the counts to a fraction of the coverage
             "awk 'BEGIN { FS=OFS = \"\t\" } "
-            f"         {{ print {order} }}'"
+            f"          {{  $15 = $14 / ($6 - $5)"
+            f"          {'' if binarize else '* $8'};"
+            f"           print {order} }}'"
         ),
         shell = True, text = True,
         stdin = subprocess.PIPE,
         stdout = subprocess.PIPE
     ).communicate(input = unsorted_peaks)
 
-    df = bdg_to_df(peaks, binarize = binarize)
+    df = bdg_to_df(peaks)
     return df
 
 
