@@ -1,7 +1,7 @@
 # CLI Usage
 
 ```
-usage: quantify.py [-h] [-b] input output
+usage: python quantify.py [-h] [-b] input output
 
 positional arguments:
   input           comma-delimited file denoting path to peak BED
